@@ -1,4 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a headless examination API built with Next.js App Router, TypeScript, Prisma, and PostgreSQL.
+
+## API
+
+The current versioned API is available under `/api/v0`. See [API documentation](./api-docs/README.md) for routes, request formats, and response examples.
+
+Legacy unversioned routes remain available for compatibility.
 
 ## Getting Started
 
