@@ -1,0 +1,88 @@
+name: Bug report
+description: Report an exam client, question rendering, API, or grading issue.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Report reproducible issues without including student information, access tokens, exam keys, or production credentials.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+      placeholder: The selected answer is marked incorrect after submission.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Exam UI or API client
+        - Question rendering
+        - Answer submission
+        - Grading calculation
+        - Authentication or exam access
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: question_type
+    attributes:
+      label: Question type
+      description: Select the type involved, or Not applicable.
+      options:
+        - Not applicable
+        - MULTIPLE_CHOICE
+        - CHECKBOX
+        - DRAG_DROP
+        - SHORT_ANSWER
+        - LONG_ANSWER
+        - DROPDOWN
+        - MATCH
+        - FILL_IN
+        - GRID_MULTIPLE
+        - GRID_CHECKBOX
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: API route or client location
+      description: Include the HTTP method and route when the issue involves the API.
+      placeholder: POST /api/v0/exams/{examId}/attempt
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use a test exam and non-production account.
+      placeholder: |
+        1. Create or open a test exam...
+        2. Submit this answer...
+        3. Observe the result...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and safe diagnostics
+      description: Include browser/runtime version and sanitized error messages. Remove tokens, keys, personal data, and database URLs.
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Screenshots or additional context
+      description: Redact names, emails, grades, answer keys, and other student or exam data before attaching.

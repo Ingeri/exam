@@ -1,0 +1,67 @@
+name: Feature request
+description: Propose an assessment capability or question type.
+title: "feature: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        For a new question type, describe its authoring data, answer payload, validation, and grading behavior. Do not include real student or exam data.
+  - type: input
+    id: summary
+    attributes:
+      label: Feature summary
+      placeholder: Add support for an audio-response question
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Request type
+      options:
+        - New question type
+        - Existing question type improvement
+        - Exam authoring or administration
+        - Submission or grading
+        - API or integration
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and intended users
+      description: What assessment need does this address, and who benefits?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the instructor and student experience, including edge cases.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Data and API contract
+      description: For a new question type, suggest authoring configuration, student answer JSON, validation rules, scoring, and manual-review behavior.
+      render: json
+  - type: textarea
+    id: architecture
+    attributes:
+      label: Implementation considerations
+      description: Consider schema changes, API routes, any consuming renderer, accessibility, reporting, and compatibility with existing attempts.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I checked the existing [question type specification](../../docs/QUESTION_TYPES.md) and [API reference](../../docs/API_REFERENCE.md) for related behavior.
+          required: true
+        - label: This proposal does not include private student, exam, or credential data.
+          required: true
