@@ -10,38 +10,38 @@ All routes require `Authorization: Bearer <JWT>` except public guest submissions
 
 This API does not issue login or access tokens. A trusted identity provider must authenticate users and issue signed tokens for pre-provisioned database users. Provision the first `ADMIN` through a trusted database or operations workflow; never trust caller-supplied user IDs or roles.
 
-| Role | Permissions |
-| --- | --- |
-| `STUDENT` | Discover public/allowed exams, verify keys, submit attempts, read own results |
-| `INSTRUCTOR` | Manage own exams/questions, read own reports and attempts |
-| `ADMIN` | Manage all instructor exams/reports, change system settings, list all exams/users, moderate exams and user roles |
-| Public guest | Submit to public exams with a name and email; cannot access private exams or results |
+| Role         | Permissions                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `STUDENT`    | Discover public/allowed exams, verify keys, submit attempts, read own results                                    |
+| `INSTRUCTOR` | Manage own exams/questions, read own reports and attempts                                                        |
+| `ADMIN`      | Manage all instructor exams/reports, change system settings, list all exams/users, moderate exams and user roles |
+| Public guest | Submit to public exams with a name and email; cannot access private exams or results                             |
 
 Missing or invalid credentials return `401`; authenticated users without permission receive `403`. Owner-scoped resources return `404` when they belong to another instructor/student.
 
 ## Endpoints
 
-| Method | Path                        | Purpose                                                    |
-| ------ | --------------------------- | ---------------------------------------------------------- |
-| `GET`  | `/exams`                    | List exams, creator summaries, and question counts         |
-| `POST` | `/exams`                    | Create a draft exam                                        |
-| `GET`  | `/exams/{examId}`           | Read an exam and its ordered questions and related records |
-| `POST` | `/exams/{examId}/questions` | Add a question with type-specific related records          |
-| `POST` | `/exams/{examId}/attempt`   | Submit and grade an exam attempt                           |
-| `POST` | `/attempt`                  | Submit an attempt with `examId` in the body                |
-| `GET`  | `/attempts/{attemptId}`     | Retrieve attempt results and answer breakdown              |
-| `GET`  | `/instructor/exams` | List exams created by the instructor |
-| `POST` | `/instructor/exams` | Create a scheduled/keyed/public or restricted exam |
-| `PUT` / `DELETE` | `/instructor/exams/{examId}` | Update or delete an owned exam |
-| `GET` | `/instructor/exams/{examId}/reports` | Marks and grade distribution |
-| `GET` | `/student/exams` | Discover published exams available to the student |
-| `GET` | `/student/exams/{examId}` | Retrieve authorized exam questions with answer keys removed |
-| `POST` | `/student/exams/{examId}/verify-key` | Verify an exam key and receive a short-lived token |
-| `GET` / `PUT` | `/admin/settings` | Read or update global rules |
-| `GET` | `/admin/exams` | Paginated overview of all exams |
-| `PATCH` | `/admin/exams/{examId}` | Change exam status |
-| `GET` | `/admin/users` | Paginated/searchable account overview |
-| `PATCH` | `/admin/users/{userId}` | Update a user name, registration number, or role |
+| Method           | Path                                 | Purpose                                                     |
+| ---------------- | ------------------------------------ | ----------------------------------------------------------- |
+| `GET`            | `/exams`                             | List exams, creator summaries, and question counts          |
+| `POST`           | `/exams`                             | Create a draft exam                                         |
+| `GET`            | `/exams/{examId}`                    | Read an exam and its ordered questions and related records  |
+| `POST`           | `/exams/{examId}/questions`          | Add a question with type-specific related records           |
+| `POST`           | `/exams/{examId}/attempt`            | Submit and grade an exam attempt                            |
+| `POST`           | `/attempt`                           | Submit an attempt with `examId` in the body                 |
+| `GET`            | `/attempts/{attemptId}`              | Retrieve attempt results and answer breakdown               |
+| `GET`            | `/instructor/exams`                  | List exams created by the instructor                        |
+| `POST`           | `/instructor/exams`                  | Create a scheduled/keyed/public or restricted exam          |
+| `PUT` / `DELETE` | `/instructor/exams/{examId}`         | Update or delete an owned exam                              |
+| `GET`            | `/instructor/exams/{examId}/reports` | Marks and grade distribution                                |
+| `GET`            | `/student/exams`                     | Discover published exams available to the student           |
+| `GET`            | `/student/exams/{examId}`            | Retrieve authorized exam questions with answer keys removed |
+| `POST`           | `/student/exams/{examId}/verify-key` | Verify an exam key and receive a short-lived token          |
+| `GET` / `PUT`    | `/admin/settings`                    | Read or update global rules                                 |
+| `GET`            | `/admin/exams`                       | Paginated overview of all exams                             |
+| `PATCH`          | `/admin/exams/{examId}`              | Change exam status                                          |
+| `GET`            | `/admin/users`                       | Paginated/searchable account overview                       |
+| `PATCH`          | `/admin/users/{userId}`              | Update a user name, registration number, or role            |
 
 ## `GET /exams`
 
@@ -197,7 +197,10 @@ Example:
   "closesAt": "2026-11-01T10:00:00.000Z",
   "examKey": "classroom-code",
   "isPublic": false,
-  "allowedStudents": [{ "email": "student@example.com" }, { "registrationNumber": "REG-204" }]
+  "allowedStudents": [
+    { "email": "student@example.com" },
+    { "registrationNumber": "REG-204" }
+  ]
 }
 ```
 
