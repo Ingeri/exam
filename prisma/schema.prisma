@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -39,14 +38,14 @@ enum AttemptStatus {
 }
 
 model User {
-  id        String       @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  email     String       @unique
-  role      Role         @default(STUDENT)
-  exams     Exam[]       @relation("CreatedExams")
+  email     String        @unique
+  role      Role          @default(STUDENT)
+  exams     Exam[]        @relation("CreatedExams")
   attempts  ExamAttempt[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model Exam {
@@ -65,13 +64,13 @@ model Exam {
 }
 
 model Question {
-  id          String       @id @default(cuid())
-  examId      String
-  exam        Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
-  type        QuestionType
-  text        String
-  points      Float        @default(1.0)
-  orderIndex  Int
+  id         String       @id @default(cuid())
+  examId     String
+  exam       Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  type       QuestionType
+  text       String
+  points     Float        @default(1.0)
+  orderIndex Int
 
   options     QuestionOption[]
   matchPairs  MatchPair[]
