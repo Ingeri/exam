@@ -54,6 +54,14 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/exam_ci?schema=public
+
+      - name: Generate Next.js route types
+        run: pnpm exec next typegen
+
       - name: Type check
         run: pnpm exec tsc --noEmit
 
