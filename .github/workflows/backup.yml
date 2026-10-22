@@ -1,0 +1,42 @@
+name: Automated Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * 0' # Runs weekly on Sundays at 2:00 AM UTC
+  workflow_dispatch: {} # Allows manual triggering
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL Client (pg_dump)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Run Database Backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="supabase_backup_${TIMESTAMP}.dump"
+          
+          echo "Starting backup..."
+          pg_dump "$DATABASE_URL" --format=custom --file="$BACKUP_FILE"
+          
+          echo "Backup completed successfully: $BACKUP_FILE"
+          mkdir -p backups
+          mv "$BACKUP_FILE" backups/
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-db-backup
+          path: backups/
+          retention-days: 30 # Keeps backups stored in GitHub for 30 days
