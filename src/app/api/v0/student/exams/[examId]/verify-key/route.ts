@@ -20,11 +20,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ exa
         status: true,
         isPublic: true,
         examKey: true,
+        opensAt: true,
         closesAt: true,
         allowedStudents: { select: { email: true, registrationNumber: true } },
       },
     });
     if (!exam || exam.status !== "PUBLISHED") return jsonError("Exam not found.", 404);
+    const now = new Date();
+    if (exam.opensAt && now <= exam.opensAt) return jsonError("This exam has not opened yet.", 409);
+    if (exam.closesAt && now >= exam.closesAt) return jsonError("The submission window for this exam has closed.", 409);
     if (!exam.isPublic && !exam.allowedStudents.some((allowed) =>
       (allowed.email && allowed.email.toLowerCase() === auth.user.email.toLowerCase()) ||
       (allowed.registrationNumber && allowed.registrationNumber === auth.user.registrationNumber))) {

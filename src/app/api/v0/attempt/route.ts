@@ -7,9 +7,11 @@ export async function POST(request: Request) {
   if (!isNonEmptyString(body.examId)) return jsonError("examId is required.", 400);
 
   const { examId, ...submission } = body;
+  const headers = new Headers(request.headers);
+  headers.delete("content-length");
   const forwardedRequest = new Request(request.url, {
     method: "POST",
-    headers: request.headers,
+    headers,
     body: JSON.stringify(submission),
   });
 
