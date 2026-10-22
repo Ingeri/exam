@@ -27,7 +27,14 @@ export function signToken(payload: Record<string, unknown>, expiresAt: Date): st
   if (!secret) return null;
   const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-  const body = Buffer.from(JSON.stringify({ ...payload, iat: now, exp: Math.floor(expiresAt.getTime() / 1000) })).toString("base64url");
+  const claims = {
+    ...payload,
+    ...(process.env.AUTH_JWT_ISSUER ? { iss: process.env.AUTH_JWT_ISSUER } : {}),
+    ...(process.env.AUTH_JWT_AUDIENCE ? { aud: process.env.AUTH_JWT_AUDIENCE } : {}),
+    iat: now,
+    exp: Math.floor(expiresAt.getTime() / 1000),
+  };
+  const body = Buffer.from(JSON.stringify(claims)).toString("base64url");
   const content = `${header}.${body}`;
   const signature = createHmac("sha256", secret).update(content).digest("base64url");
   return `${content}.${signature}`;
@@ -56,7 +63,8 @@ export function verifySignedToken(token: string): Record<string, unknown> | null
       (typeof payload.nbf === "number" && payload.nbf > now) ||
       (typeof payload.iat === "number" && payload.iat > now + 60)) return null;
   if (process.env.AUTH_JWT_ISSUER && payload.iss !== process.env.AUTH_JWT_ISSUER) return null;
-  if (process.env.AUTH_JWT_AUDIENCE && payload.aud !== process.env.AUTH_JWT_AUDIENCE) return null;
+  if (process.env.AUTH_JWT_AUDIENCE && payload.aud !== process.env.AUTH_JWT_AUDIENCE &&
+      !(Array.isArray(payload.aud) && payload.aud.includes(process.env.AUTH_JWT_AUDIENCE))) return null;
   return payload;
 }
 

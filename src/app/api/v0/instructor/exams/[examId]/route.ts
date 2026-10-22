@@ -1,6 +1,6 @@
 import { isAuthFailure, requireRole } from "@/lib/auth";
 import { isNonEmptyString, isRecord, jsonError, readJson } from "@/lib/api";
-import { hashExamKey } from "@/lib/exam-access";
+import { hasExamKeySecret, hashExamKey } from "@/lib/exam-access";
 import { prisma } from "@/lib/prisma";
 import { ExamStatus } from "@prisma/client";
 
@@ -79,6 +79,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ exam
 
     if (body.examKey !== undefined) {
       if (body.examKey !== null && !isNonEmptyString(body.examKey)) return jsonError("examKey must be a non-empty string or null.", 400);
+      if (typeof body.examKey === "string" && !hasExamKeySecret()) return jsonError("Exam key storage is not configured.", 503);
       data.examKey = typeof body.examKey === "string" ? hashExamKey(body.examKey) : null;
     }
     let allowedStudents: { email: string | null; registrationNumber: string | null }[] | undefined;
