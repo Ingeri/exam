@@ -1,8 +1,8 @@
 import { authenticateOptional, verifySignedToken } from "@/lib/auth";
 import { isNonEmptyString, isRecord, jsonError, readJson } from "@/lib/api";
-import { matchesExamKey } from "@/lib/exam-access";
+import { hasExamKeySecret, matchesExamKey } from "@/lib/exam-access";
 import { prisma } from "@/lib/prisma";
-import { POST as submitAttempt } from "@/app/api/exams/[id]/attempt/route";
+import { submitAttemptAnswers } from "@/lib/submit-attempt";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authenticateOptional(request);
@@ -35,6 +35,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (exam.closesAt && now >= exam.closesAt) return jsonError("The submission window for this exam has closed.", 409);
 
   if (exam.examKey) {
+    if (exam.examKey.startsWith("hmac-sha256:") && !hasExamKeySecret()) return jsonError("Exam key verification is not configured.", 503);
     const enteredKeyValid = typeof body.examKey === "string" && matchesExamKey(body.examKey, exam.examKey);
     const claims = typeof body.keyToken === "string" ? verifySignedToken(body.keyToken) : null;
     const tokenValid = Boolean(auth.user && claims && claims.kind === "exam-key" && claims.examId === examId && claims.sub === auth.user.id);
@@ -72,12 +73,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
   }
 
-  const headers = new Headers(request.headers);
-  headers.delete("content-length");
-  const proxied = new Request(request.url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ ...body, userId }),
-  });
-  return submitAttempt(proxied, { params: Promise.resolve({ id: examId }) });
+  if (!isRecord(body.answers)) return jsonError("answers must be an object keyed by question ID.", 400);
+  return submitAttemptAnswers(examId, userId, body.answers);
 }

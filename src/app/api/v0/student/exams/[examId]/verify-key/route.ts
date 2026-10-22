@@ -1,6 +1,6 @@
 import { isAuthFailure, requireRole, signToken } from "@/lib/auth";
 import { isRecord, jsonError, readJson } from "@/lib/api";
-import { matchesExamKey } from "@/lib/exam-access";
+import { hasExamKeySecret, matchesExamKey } from "@/lib/exam-access";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request, { params }: { params: Promise<{ examId: string }> }) {
@@ -35,6 +35,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ exa
       return jsonError("You are not authorized for this exam.", 403);
     }
     if (!exam.examKey) return jsonError("This exam does not require an access key.", 409);
+    if (exam.examKey.startsWith("hmac-sha256:") && !hasExamKeySecret()) return jsonError("Exam key verification is not configured.", 503);
     if (!matchesExamKey(body.examKey, exam.examKey)) return jsonError("Exam key is incorrect.", 403);
 
     const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000);

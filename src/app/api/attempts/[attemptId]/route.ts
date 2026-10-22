@@ -1,13 +1,26 @@
 import { jsonError } from "@/lib/api";
+import { isAuthFailure, requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ attemptId: string }> },
 ) {
+  const auth = await requireRole(_request, ["STUDENT", "INSTRUCTOR", "ADMIN"]);
+  if (isAuthFailure(auth)) return auth.response;
   const { attemptId } = await params;
 
   try {
+    const access = await prisma.examAttempt.findUnique({
+      where: { id: attemptId },
+      select: { userId: true, exam: { select: { createdById: true } } },
+    });
+    if (!access) return jsonError("Attempt not found.", 404);
+    const allowed = auth.user.role === "ADMIN" ||
+      (auth.user.role === "STUDENT" && access.userId === auth.user.id) ||
+      (auth.user.role === "INSTRUCTOR" && access.exam.createdById === auth.user.id);
+    if (!allowed) return jsonError("Attempt not found.", 404);
+
     const attempt = await prisma.examAttempt.findUnique({
       where: { id: attemptId },
       include: {

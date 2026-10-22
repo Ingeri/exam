@@ -1,4 +1,5 @@
 import { isNonEmptyString, isRecord, jsonError, readJson } from "@/lib/api";
+import { isAuthFailure, requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { QuestionType } from "@prisma/client";
 
@@ -21,6 +22,8 @@ function validOrderIndex(value: unknown): value is number {
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireRole(request, ["INSTRUCTOR", "ADMIN"]);
+  if (isAuthFailure(auth)) return auth.response;
   const { id: examId } = await params;
   const body = await readJson(request);
   if (!isRecord(body)) return jsonError("Request body must be a JSON object.", 400);
@@ -112,6 +115,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const exam = await prisma.exam.findUnique({ where: { id: examId }, select: { id: true } });
     if (!exam) return jsonError("Exam not found.", 404);
+    const owner = await prisma.exam.findUnique({ where: { id: examId }, select: { createdById: true } });
+    if (auth.user.role !== "ADMIN" && owner?.createdById !== auth.user.id) return jsonError("Exam not found.", 404);
 
     const nextIndex = orderIndex === undefined
       ? (((await prisma.question.aggregate({ where: { examId }, _max: { orderIndex: true } }))._max.orderIndex ?? -1) + 1)

@@ -2,7 +2,7 @@
 
 Base URL: `http://localhost:3000/api/v0`
 
-All request and response bodies use JSON. The `/api/v0` prefix identifies the current API contract. Legacy unversioned routes remain available at `/api` for compatibility; RBAC is enforced on the versioned routes.
+All request and response bodies use JSON. The `/api/v0` prefix identifies the current API contract. Legacy unversioned routes remain available at `/api` for compatibility and forward through the same versioned permission, timing, enrollment, and key checks.
 
 ## Authentication and RBAC
 
@@ -35,6 +35,7 @@ Missing or invalid credentials return `401`; authenticated users without permiss
 | `PUT` / `DELETE` | `/instructor/exams/{examId}` | Update or delete an owned exam |
 | `GET` | `/instructor/exams/{examId}/reports` | Marks and grade distribution |
 | `GET` | `/student/exams` | Discover published exams available to the student |
+| `GET` | `/student/exams/{examId}` | Retrieve authorized exam questions with answer keys removed |
 | `POST` | `/student/exams/{examId}/verify-key` | Verify an exam key and receive a short-lived token |
 | `GET` / `PUT` | `/admin/settings` | Read or update global rules |
 | `GET` | `/admin/exams` | Paginated overview of all exams |
@@ -215,6 +216,10 @@ Returns student marks, submission status, manual-review flags, average percentag
 ### `GET /student/exams`
 
 Returns published public exams and private published exams whose allow-list matches the authenticated student's email or registration number. The response contains no correct answers or exam key.
+
+### `GET /student/exams/{examId}`
+
+Returns questions only while the exam is published and inside its configured time window. The response omits option correctness, accepted answers, grid answer cells, and match pairings. Matching questions provide the left-side prompts and a separately shuffled `matchChoices` list. For keyed exams, send the token from `/verify-key` in the `X-Exam-Key-Token` header.
 
 ### `POST /student/exams/{examId}/verify-key`
 
