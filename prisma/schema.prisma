@@ -1,13 +1,155 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  CHECKBOX
+  DRAG_DROP
+  SHORT_ANSWER
+  LONG_ANSWER
+  DROPDOWN
+  MATCH
+  FILL_IN
+  GRID_MULTIPLE
+  GRID_CHECKBOX
+}
+
+enum ExamStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+}
+
+model User {
+  id        String       @id @default(cuid())
+  name      String
+  email     String       @unique
+  role      Role         @default(STUDENT)
+  exams     Exam[]       @relation("CreatedExams")
+  attempts  ExamAttempt[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model Exam {
+  id              String        @id @default(cuid())
+  title           String
+  description     String?
+  durationMinutes Int
+  passingScore    Int?
+  status          ExamStatus    @default(DRAFT)
+  createdById     String
+  createdBy       User          @relation("CreatedExams", fields: [createdById], references: [id], onDelete: Cascade)
+  questions       Question[]
+  attempts        ExamAttempt[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Question {
+  id          String       @id @default(cuid())
+  examId      String
+  exam        Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  type        QuestionType
+  text        String
+  points      Float        @default(1.0)
+  orderIndex  Int
+
+  options     QuestionOption[]
+  matchPairs  MatchPair[]
+  gridRows    GridRow[]
+  gridColumns GridColumn[]
+  blanks      ClozeBlank[]
+
+  userAnswers UserAnswer[]
+  createdAt   DateTime     @default(now())
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean  @default(false)
+  orderIndex Int      @default(0)
+}
+
+model MatchPair {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  leftText   String
+  rightText  String
+  orderIndex Int      @default(0)
+}
+
+model GridRow {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  orderIndex Int      @default(0)
+}
+
+model GridColumn {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  orderIndex Int      @default(0)
+}
+
+model ClozeBlank {
+  id              String   @id @default(cuid())
+  questionId      String
+  question        Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  blankIdentifier String
+  acceptedAnswers String[]
+  orderIndex      Int      @default(0)
+}
+
+model ExamAttempt {
+  id          String        @id @default(cuid())
+  examId      String
+  exam        Exam          @relation(fields: [examId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      AttemptStatus @default(IN_PROGRESS)
+  startedAt   DateTime      @default(now())
+  submittedAt DateTime?
+  score       Float?
+  answers     UserAnswer[]
+  createdAt   DateTime      @default(now())
+}
+
+model UserAnswer {
+  id           String      @id @default(cuid())
+  attemptId    String
+  attempt      ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerValue  Json
+  isCorrect    Boolean?
+  pointsEarned Float?
+  createdAt    DateTime    @default(now())
+
+  @@unique([attemptId, questionId])
 }
