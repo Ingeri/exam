@@ -29,7 +29,7 @@ See [API documentation](./api-docs/README.md) for routes, authentication, reques
 - pnpm 11 (the package manager declared by this repository)
 - PostgreSQL
 - A database connection URL in `DATABASE_URL`
-- An `AUTH_SECRET` for signed API tokens
+- An `AUTH_JWT_SECRET` (at least 32 bytes) for signed API tokens
 
 ## Local setup
 
