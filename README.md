@@ -9,7 +9,7 @@ Product and organization information: [ingeritech.com](https://ingeritech.com).
 - **Next.js 16 App Router** for API route handlers
 - **TypeScript** for application and API types
 - **Tailwind CSS 4** is installed for styling if a client is added
-- **Prisma ORM 8** for PostgreSQL data access
+- **Prisma ORM** for PostgreSQL data access
 - **PostgreSQL** for users, exams, questions, attempts, and answers
 
 ## Features
@@ -38,7 +38,7 @@ pnpm install
 cp .env.example .env
 ```
 
-Set `DATABASE_URL` in `.env` to your PostgreSQL connection string and set a strong `AUTH_SECRET`. If `.env.example` is unavailable in your checkout, create `.env` with those variables. Then synchronize the development database and generate Prisma Client:
+Set `DATABASE_URL` in `.env` to your PostgreSQL connection string and set a strong `AUTH_JWT_SECRET` (at least 32 bytes). If `.env.example` is unavailable in your checkout, create `.env` with those variables. Then synchronize the development database and generate Prisma Client:
 
 ```bash
 pnpm exec prisma db push
