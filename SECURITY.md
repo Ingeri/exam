@@ -23,7 +23,7 @@ These controls are implementation measures, not a guarantee that all deployments
 
 ## Session and token handling
 
-Bearer tokens are signed but are not encrypted. Keep token lifetimes short, use TLS, rotate `AUTH_JWT_SECRET` after suspected exposure, and revoke access by disabling or removing the associated user. The current implementation validates expiry and optional issuer/audience claims; deployments should additionally apply operational safeguards such as rate limiting and monitoring at the edge.
+Bearer tokens are signed but are not encrypted. Keep token lifetimes short and use TLS. Rotating `AUTH_JWT_SECRET` invalidates all tokens signed with the previous secret; the current schema has no per-user token revocation field or session store. Deleting a user also invalidates their tokens but cascades to that user's exams and attempts, so do not use account deletion as a routine token-revocation mechanism. The current implementation validates expiry and optional issuer/audience claims; deployments should additionally apply operational safeguards such as rate limiting and monitoring at the edge.
 
 ## Vulnerability reporting
 
