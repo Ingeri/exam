@@ -2,7 +2,7 @@
 
 The persisted question type is `Question.type` in `prisma/schema.prisma`. Each question stores common metadata (`text`, `points`, and `orderIndex`) and may have child records in `QuestionOption`, `MatchPair`, `GridRow`, `GridColumn`, and `ClozeBlank`. The question creation API accepts those child arrays as nested JSON and returns children ordered by `orderIndex`.
 
-This repository is currently a headless API: it does not contain question renderer components. A consuming client should select its renderer by the `type` enum, render the question text and ordered configuration, and serialize an answer in the documented shape. Server validation and grading live in `src/lib/grading.ts`; the create-question endpoint validates authoring data.
+The browser app includes account and role dashboards, while question authoring and exam-taking screens are still provided by consuming clients. A client should select its question renderer by the `type` enum, render the question text and ordered configuration, and serialize an answer in the documented shape. Server validation and grading live in `src/lib/grading.ts`; the create-question endpoint validates authoring data.
 
 ## Common rules
 

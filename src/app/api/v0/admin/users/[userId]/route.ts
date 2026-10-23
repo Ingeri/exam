@@ -3,7 +3,7 @@ import { isNonEmptyString, isRecord, jsonError, readJson } from "@/lib/api";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ userId: string }> }) {
+async function updateUser(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const auth = await requireRole(request, ["ADMIN"]);
   if (isAuthFailure(auth)) return auth.response;
   const { userId } = await params;
@@ -51,5 +51,41 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ us
     return Response.json({ user });
   } catch {
     return jsonError("Unable to update user.", 500);
+  }
+}
+
+export async function PATCH(request: Request, context: { params: Promise<{ userId: string }> }) {
+  return updateUser(request, context);
+}
+
+export async function PUT(request: Request, context: { params: Promise<{ userId: string }> }) {
+  return updateUser(request, context);
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const auth = await requireRole(_request, ["ADMIN"]);
+  if (isAuthFailure(auth)) return auth.response;
+  const { userId } = await params;
+  if (userId === auth.user.id) return jsonError("You cannot delete your own account.", 409);
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const target = await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true, role: true },
+      });
+      if (!target) return "missing" as const;
+      if (target.role === "ADMIN" && await tx.user.count({ where: { role: "ADMIN" } }) <= 1) {
+        return "last-admin" as const;
+      }
+      await tx.user.delete({ where: { id: userId } });
+      return "deleted" as const;
+    }, { isolationLevel: "Serializable" });
+
+    if (result === "missing") return jsonError("User not found.", 404);
+    if (result === "last-admin") return jsonError("The last administrator cannot be deleted.", 409);
+    return new Response(null, { status: 204 });
+  } catch {
+    return jsonError("Unable to delete user.", 500);
   }
 }

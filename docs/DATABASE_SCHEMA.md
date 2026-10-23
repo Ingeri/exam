@@ -6,7 +6,7 @@ The PostgreSQL schema is declared in [`prisma/schema.prisma`](../prisma/schema.p
 
 | Model | Purpose | Important relations and constraints |
 | --- | --- | --- |
-| `User` | Account identity, email, optional registration number, and role (`STUDENT`, `INSTRUCTOR`, `ADMIN`). | `email` is unique. `registrationNumber` is indexed but nullable and not unique. Has created exams and attempts. |
+| `User` | Account identity, email, optional bcrypt password hash, optional registration number, and role (`STUDENT`, `INSTRUCTOR`, `ADMIN`). | `email` is unique. `passwordHash` is nullable for externally provisioned accounts. `registrationNumber` is indexed but nullable and not unique. Has created exams and attempts. |
 | `Exam` | Assessment metadata, creator, publication state, access settings, questions, and attempts. | `createdById` references `User.id`; creator/time and visibility/window fields are indexed. Has optional timing window, optional access key, and `isPublic` false by default. |
 | `AllowedStudent` | Email and/or registration-number allowlist entry for a restricted exam. | `examId` references `Exam.id`; composite unique constraints on `(examId, email)` and `(examId, registrationNumber)`. Each identity field is nullable and indexed. |
 | `SystemSetting` | Global key/value configuration, with JSON value and update timestamp. | `key` is the primary key. No user foreign key. |

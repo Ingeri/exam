@@ -6,9 +6,9 @@ All request and response bodies use JSON. The `/api/v0` prefix identifies the cu
 
 ## Authentication and RBAC
 
-All routes require `Authorization: Bearer <JWT>` except public guest submissions to `POST /attempt` and `POST /exams/{examId}/attempt`. Tokens must use HS256 and `AUTH_JWT_SECRET` must be at least 32 bytes. The JWT `sub` claim must be the database `User.id`; the database role is loaded on every request, and role claims in the token are ignored. Set `AUTH_JWT_ISSUER` and `AUTH_JWT_AUDIENCE` to enforce issuer/audience claims. Exam keys are HMAC-hashed using `EXAM_KEY_SECRET` (at least 32 bytes) or, if absent, `AUTH_JWT_SECRET`; keep the selected key secret stable or existing exam keys will no longer verify. Exam-key tokens use the JWT signing configuration.
+All protected routes require `Authorization: Bearer <JWT>` except public guest submissions to `POST /attempt` and `POST /exams/{examId}/attempt`. Obtain a token using `POST /auth/login` or `POST /auth/register`. Tokens use HS256 and `AUTH_JWT_SECRET` must be at least 32 bytes. The JWT `sub` claim is the database `User.id`; the database role is loaded on every request, and role claims in the token are ignored. Tokens expire after seven days. Set `AUTH_JWT_ISSUER` and `AUTH_JWT_AUDIENCE` to enforce issuer/audience claims. Exam keys are HMAC-hashed using `EXAM_KEY_SECRET` (at least 32 bytes) or, if absent, `AUTH_JWT_SECRET`; keep the selected key secret stable or existing exam keys will no longer verify. Exam-key tokens use the JWT signing configuration.
 
-This API does not issue login or access tokens. A trusted identity provider must authenticate users and issue signed tokens for pre-provisioned database users. Provision the first `ADMIN` through a trusted database or operations workflow; never trust caller-supplied user IDs or roles.
+Registration accepts `STUDENT` or `INSTRUCTOR`; it never accepts `ADMIN`. Provision the first administrator and any additional administrators through a trusted database or operations workflow. Never trust caller-supplied user IDs or roles on protected operations.
 
 | Role         | Permissions                                                                                                      |
 | ------------ | ---------------------------------------------------------------------------------------------------------------- |
@@ -23,6 +23,8 @@ Missing or invalid credentials return `401`; authenticated users without permiss
 
 | Method           | Path                                 | Purpose                                                     |
 | ---------------- | ------------------------------------ | ----------------------------------------------------------- |
+| `POST`           | `/auth/register`                     | Register a student or instructor account                    |
+| `POST`           | `/auth/login`                        | Validate credentials and issue a bearer token               |
 | `GET`            | `/exams`                             | List exams, creator summaries, and question counts          |
 | `POST`           | `/exams`                             | Create a draft exam                                         |
 | `GET`            | `/exams/{examId}`                    | Read an exam and its ordered questions and related records  |
@@ -33,6 +35,7 @@ Missing or invalid credentials return `401`; authenticated users without permiss
 | `GET`            | `/instructor/exams`                  | List exams created by the instructor                        |
 | `POST`           | `/instructor/exams`                  | Create a scheduled/keyed/public or restricted exam          |
 | `PUT` / `DELETE` | `/instructor/exams/{examId}`         | Update or delete an owned exam                              |
+| `POST`           | `/instructor/exams/{examId}/students`| Enroll one or many students in a private exam               |
 | `GET`            | `/instructor/exams/{examId}/reports` | Marks and grade distribution                                |
 | `GET`            | `/student/exams`                     | Discover published exams available to the student           |
 | `GET`            | `/student/exams/{examId}`            | Retrieve authorized exam questions with answer keys removed |
@@ -41,7 +44,47 @@ Missing or invalid credentials return `401`; authenticated users without permiss
 | `GET`            | `/admin/exams`                       | Paginated overview of all exams                             |
 | `PATCH`          | `/admin/exams/{examId}`              | Change exam status                                          |
 | `GET`            | `/admin/users`                       | Paginated/searchable account overview                       |
-| `PATCH`          | `/admin/users/{userId}`              | Update a user name, registration number, or role            |
+| `PUT` / `PATCH`  | `/admin/users/{userId}`              | Update a user's name, registration number, or role           |
+| `DELETE`         | `/admin/users/{userId}`              | Delete a user and their related exams and attempts           |
+
+## Authentication endpoints
+
+### `POST /auth/register`
+
+Creates a `STUDENT` or `INSTRUCTOR` user and returns `201` with a seven-day bearer token. `name`, `email`, and `password` are required. `registrationNumber` is optional. Passwords must be at least 12 characters and at most 72 UTF-8 bytes. Email is normalized to lowercase. Passwords are stored as bcrypt hashes. `role` defaults to `STUDENT`; `ADMIN` is rejected. Returns `409` when the email is already registered and `503` when `AUTH_JWT_SECRET` is missing or shorter than 32 bytes.
+
+```json
+{
+  "name": "Amina Niyonsenga",
+  "email": "amina@example.com",
+  "password": "a-long-unique-passphrase",
+  "registrationNumber": "REG-204",
+  "role": "STUDENT"
+}
+```
+
+The response contains `{ "user": { ... }, "token": "...", "tokenType": "Bearer", "expiresIn": 604800 }`. Only public user fields are returned.
+
+### `POST /auth/login`
+
+Accepts `{ "email": "amina@example.com", "password": "..." }`. Returns the same token response as registration. Unknown accounts and incorrect passwords share the same `401` response.
+
+Send the token on protected requests as `Authorization: Bearer <token>`. The browser UI keeps it in tab-scoped `sessionStorage`; production deployments should use HTTPS and apply their standard XSS protections. There is no server-side token revocation store; tokens expire after seven days, and deleting the user makes their token unusable.
+
+## `POST /instructor/exams/{examId}/students`
+
+Requires the owning instructor or an admin. The exam must be private. Submit a single identity, a `students` array, or the `emails` and/or `registrationNumbers` arrays. Each identity needs an email, a registration number, or both. The endpoint accepts at most 1,000 entries, trims identifiers, normalizes email to lowercase, and skips duplicates already present for that exam.
+
+```json
+{
+  "students": [
+    { "email": "amina@example.com", "registrationNumber": "REG-204" },
+    { "email": "jean@example.com" }
+  ]
+}
+```
+
+For separate lists, send `{ "emails": ["amina@example.com"], "registrationNumbers": ["REG-204"] }`. A single entry can be sent as `{ "email": "amina@example.com" }`. Success returns `201` with `{ "added": 2, "submitted": 2 }`. Public exams are rejected with `409`; an exam owned by another instructor is returned as `404`.
 
 ## `GET /exams`
 
@@ -242,9 +285,9 @@ Returns paginated system-wide exam metadata, creator details, and counts. Query 
 
 Accepts `{ "status": "PUBLISHED" }`, `{ "status": "ARCHIVED" }`, or `{ "status": "DRAFT" }`. Publishing is rejected if the exam has no questions.
 
-### `GET /admin/users` and `PATCH /admin/users/{userId}`
+### `GET /admin/users`, `PUT` / `PATCH /admin/users/{userId}`, and `DELETE /admin/users/{userId}`
 
-The list supports `page`, `limit`, text search `q`, and a `role` filter. The patch endpoint accepts any combination of `name`, `registrationNumber`, and `role`. The last administrator cannot be demoted.
+The list supports `page`, `limit`, text search `q`, and a `role` filter. `PUT` and `PATCH` accept any combination of `name`, `registrationNumber`, and `role`. The last administrator cannot be demoted or deleted. Admins cannot delete their own account. User deletion cascades to that user's instructor exams and student attempts; the operation cannot be undone.
 
 ## Errors
 
@@ -259,4 +302,4 @@ Errors use this format:
 
 ## Access control notes
 
-Public guest submissions associate attempts with the submitted email but do not verify email ownership. Use authenticated student tokens where identity matters. The service has no login/token-issuance route; JWT signing and user provisioning belong to the trusted identity and operations systems.
+Public guest submissions associate attempts with the submitted email but do not verify email ownership. Use authenticated student tokens where identity matters. Self-service instructor registration is available; schools that require verified instructor identities should restrict access at the deployment or identity-provider layer. The first administrator must be provisioned through a trusted operations workflow.

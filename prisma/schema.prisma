@@ -41,6 +41,7 @@ model User {
   id                 String        @id @default(cuid())
   name               String
   email              String        @unique
+  passwordHash       String?
   registrationNumber String?
   role               Role          @default(STUDENT)
   exams              Exam[]        @relation("CreatedExams")
@@ -52,23 +53,23 @@ model User {
 }
 
 model Exam {
-  id              String          @id @default(cuid())
+  id              String           @id @default(cuid())
   title           String
   description     String?
   durationMinutes Int
   passingScore    Int?
-  status          ExamStatus      @default(DRAFT)
+  status          ExamStatus       @default(DRAFT)
   createdById     String
-  createdBy       User            @relation("CreatedExams", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy       User             @relation("CreatedExams", fields: [createdById], references: [id], onDelete: Cascade)
   opensAt         DateTime?
   closesAt        DateTime?
   examKey         String?
-  isPublic        Boolean         @default(false)
+  isPublic        Boolean          @default(false)
   allowedStudents AllowedStudent[]
   questions       Question[]
   attempts        ExamAttempt[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@index([createdById, createdAt])
   @@index([isPublic, opensAt, closesAt])
