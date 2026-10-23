@@ -7,6 +7,7 @@ Ingeri Exam handles assessment content, access credentials, submissions, and res
 - Versioned API routes enforce role checks for protected student, instructor, and administrator operations.
 - API bearer tokens are signed with HS256, checked for expiration and signature using a timing-safe comparison, and resolved against the current user record. Configure `AUTH_JWT_SECRET` as a high-entropy secret of at least 32 bytes. Optional issuer and audience checks are available through `AUTH_JWT_ISSUER` and `AUTH_JWT_AUDIENCE`.
 - Exam access keys can be stored as HMAC-SHA256 digests using `EXAM_KEY_SECRET` (or `AUTH_JWT_SECRET`) and compared using timing-safe equality. Avoid storing plaintext access keys.
+- Login and registration passwords are stored as bcrypt hashes. Public registration permits `STUDENT` and `INSTRUCTOR`; it cannot create administrators. Provision administrators through a trusted operations process.
 - Exam access can be restricted by publication status, time window, access key, and allowed-student identity.
 
 These controls are implementation measures, not a guarantee that all deployments or exams are cheat-proof. Instructors should choose appropriate proctoring and identity checks for their exam context.
@@ -16,7 +17,7 @@ These controls are implementation measures, not a guarantee that all deployments
 - Do not expose answer keys, accepted answers, or correctness flags in student-facing exam responses before submission.
 - Grade using server-side question data; ignore client-supplied scores and correctness claims.
 - Keep review and grading records auditable, and restrict them to authorized roles.
-- Use HTTPS in deployed environments and keep bearer tokens out of URLs, browser storage that is accessible to injected scripts, logs, analytics, and support tickets.
+- Use HTTPS in deployed environments and keep bearer tokens out of URLs, logs, analytics, and support tickets. The built-in browser UI keeps its seven-day bearer token in tab-scoped `sessionStorage`; this is accessible to scripts running in the page, so prevent XSS and consider an HttpOnly session design for deployments with stricter token-storage requirements.
 - Keep secrets in environment secret stores. Never commit `.env` files or production credentials.
 - Apply appropriate retention and access controls to personally identifiable information and assessment records.
 - Consider rate limits, replay protection, logging, monitoring, and proctoring controls as part of each production deployment's threat model.

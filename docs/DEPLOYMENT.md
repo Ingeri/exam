@@ -23,7 +23,7 @@ Edit `.env` and set:
 - Optionally `AUTH_JWT_ISSUER` and `AUTH_JWT_AUDIENCE` to values that your identity provider includes in issued tokens.
 - Optionally `NEXT_PUBLIC_APP_URL` to the origin of the consuming client. This repository does not currently read this value.
 
-`NEXTAUTH_SECRET` is not used: this project has no NextAuth.js integration. API authentication expects bearer JWTs issued by a trusted external identity provider; it does not implement a login or token-issuance route.
+`NEXTAUTH_SECRET` is not used: this project has no NextAuth.js integration. The built-in `/api/v0/auth/register` and `/api/v0/auth/login` endpoints issue bearer JWTs using `AUTH_JWT_SECRET`. The first `ADMIN` must still be provisioned through a trusted database or operations workflow.
 
 ## 3. Create and apply Prisma migrations
 
@@ -66,7 +66,7 @@ pnpm build
 pnpm start
 ```
 
-Configure an external identity provider to issue HS256 bearer tokens for pre-provisioned `User` records. Tokens use the database user's ID as the `sub` claim. Provision the initial administrator through a trusted operations process. Do not trust caller-supplied user IDs or roles.
+The built-in login and registration endpoints issue HS256 bearer tokens for database users. Tokens use the database user's ID as the `sub` claim. Provision the initial administrator through a trusted operations process. Do not trust caller-supplied user IDs or roles.
 
 ## 5. Configure a Vercel project
 
