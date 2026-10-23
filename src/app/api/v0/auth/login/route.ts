@@ -32,7 +32,13 @@ export async function POST(request: Request) {
 
     const token = signToken({ sub: user.id }, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
     if (!token) return jsonError("Authentication is not configured.", 503);
-    const { passwordHash: _passwordHash, ...safeUser } = user;
+    const safeUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      registrationNumber: user.registrationNumber,
+      role: user.role,
+    };
     return Response.json({ user: safeUser, token, tokenType: "Bearer", expiresIn: 604800 });
   } catch {
     return jsonError("Unable to log in.", 500);

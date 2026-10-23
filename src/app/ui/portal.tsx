@@ -143,11 +143,14 @@ function usePortalSession(role: Role) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const value = getSession();
-    if (!value) router.replace("/login");
-    else if (value.user.role !== role && !(role === "INSTRUCTOR" && value.user.role === "ADMIN")) router.replace(destination(value.user.role));
-    else setSession(value);
-    setReady(true);
+    const timer = window.setTimeout(() => {
+      const value = getSession();
+      if (!value) router.replace("/login");
+      else if (value.user.role !== role && !(role === "INSTRUCTOR" && value.user.role === "ADMIN")) router.replace(destination(value.user.role));
+      else setSession(value);
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [role, router]);
   return { session, ready };
 }
@@ -180,7 +183,10 @@ export function InstructorDashboard() {
 
   useEffect(() => {
     if (!session) return;
-    refresh(session.token).catch((reason) => setError(reason instanceof Error ? reason.message : "Unable to load exams.")).finally(() => setLoading(false));
+    const timer = window.setTimeout(() => {
+      refresh(session.token).catch((reason) => setError(reason instanceof Error ? reason.message : "Unable to load exams.")).finally(() => setLoading(false));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [refresh, session]);
 
   async function createExam(event: FormEvent<HTMLFormElement>) {
@@ -252,7 +258,10 @@ export function AdminDashboard() {
 
   useEffect(() => {
     if (!session) return;
-    refresh(session.token, query).catch((reason) => setError(reason instanceof Error ? reason.message : "Unable to load administration data.")).finally(() => setLoading(false));
+    const timer = window.setTimeout(() => {
+      refresh(session.token, "").catch((reason) => setError(reason instanceof Error ? reason.message : "Unable to load administration data.")).finally(() => setLoading(false));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [refresh, session]);
 
   async function updateRole(user: AdminUser, role: Role) {
