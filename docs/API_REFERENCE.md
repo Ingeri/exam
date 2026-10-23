@@ -12,26 +12,26 @@ The API does **not** implement a login, registration, or token-issuance endpoint
 
 ## Route index
 
-| Method | Route | Access | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/exams` | Instructor, admin | List exams with creator summary and question count. |
-| `POST` | `/exams` | Instructor, admin | Create a draft exam using the authenticated creator identity. |
-| `GET` | `/exams/{examId}` | Owning instructor, admin | Fetch exam and full question configuration, including answer keys; keep this route away from student clients. |
-| `POST` | `/exams/{examId}/questions` | Owning instructor, admin | Add a typed question and its nested options, matching pairs, grid cells, or blanks. |
-| `POST` | `/exams/{examId}/attempt` | Student or public guest | Submit answers for an exam and receive auto-grading results. |
-| `POST` | `/attempt` | Student or public guest | Same submission operation with `examId` in the JSON body. |
-| `GET` | `/attempts/{attemptId}` | Attempt owner, owning instructor, admin | Retrieve result and per-answer breakdown. |
-| `GET`, `POST` | `/instructor/exams` | Instructor, admin | List owned exams or create scheduled/restricted exams. Admins can see all. |
-| `PUT`, `DELETE` | `/instructor/exams/{examId}` | Owning instructor, admin | Update or delete an exam. Deletion cascades to questions and attempts. |
-| `GET` | `/instructor/exams/{examId}/reports` | Owning instructor, admin | Get marks, pending-review counts, and grade distribution. |
-| `GET` | `/student/exams` | Student | Discover published public or explicitly allowed exams. |
-| `GET` | `/student/exams/{examId}` | Authorized student | Get student-safe question data without correctness metadata. |
-| `POST` | `/student/exams/{examId}/verify-key` | Authorized student | Verify an exam key and receive a short-lived exam-bound token. |
-| `GET`, `PUT` | `/admin/settings` | Admin | Read or update global instructor exam-creation limits. |
-| `GET` | `/admin/exams` | Admin | List paginated system-wide exam metadata. |
-| `PATCH` | `/admin/exams/{examId}` | Admin | Change an exam's publication status. |
-| `GET` | `/admin/users` | Admin | Search and paginate users. |
-| `PATCH` | `/admin/users/{userId}` | Admin | Update a user's name, registration number, or role. |
+| Method          | Route                                | Access                                  | Purpose                                                                                                       |
+| --------------- | ------------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `GET`           | `/exams`                             | Instructor, admin                       | List exams with creator summary and question count.                                                           |
+| `POST`          | `/exams`                             | Instructor, admin                       | Create a draft exam using the authenticated creator identity.                                                 |
+| `GET`           | `/exams/{examId}`                    | Owning instructor, admin                | Fetch exam and full question configuration, including answer keys; keep this route away from student clients. |
+| `POST`          | `/exams/{examId}/questions`          | Owning instructor, admin                | Add a typed question and its nested options, matching pairs, grid cells, or blanks.                           |
+| `POST`          | `/exams/{examId}/attempt`            | Student or public guest                 | Submit answers for an exam and receive auto-grading results.                                                  |
+| `POST`          | `/attempt`                           | Student or public guest                 | Same submission operation with `examId` in the JSON body.                                                     |
+| `GET`           | `/attempts/{attemptId}`              | Attempt owner, owning instructor, admin | Retrieve result and per-answer breakdown.                                                                     |
+| `GET`, `POST`   | `/instructor/exams`                  | Instructor, admin                       | List owned exams or create scheduled/restricted exams. Admins can see all.                                    |
+| `PUT`, `DELETE` | `/instructor/exams/{examId}`         | Owning instructor, admin                | Update or delete an exam. Deletion cascades to questions and attempts.                                        |
+| `GET`           | `/instructor/exams/{examId}/reports` | Owning instructor, admin                | Get marks, pending-review counts, and grade distribution.                                                     |
+| `GET`           | `/student/exams`                     | Student                                 | Discover published public or explicitly allowed exams.                                                        |
+| `GET`           | `/student/exams/{examId}`            | Authorized student                      | Get student-safe question data without correctness metadata.                                                  |
+| `POST`          | `/student/exams/{examId}/verify-key` | Authorized student                      | Verify an exam key and receive a short-lived exam-bound token.                                                |
+| `GET`, `PUT`    | `/admin/settings`                    | Admin                                   | Read or update global instructor exam-creation limits.                                                        |
+| `GET`           | `/admin/exams`                       | Admin                                   | List paginated system-wide exam metadata.                                                                     |
+| `PATCH`         | `/admin/exams/{examId}`              | Admin                                   | Change an exam's publication status.                                                                          |
+| `GET`           | `/admin/users`                       | Admin                                   | Search and paginate users.                                                                                    |
+| `PATCH`         | `/admin/users/{userId}`              | Admin                                   | Update a user's name, registration number, or role.                                                           |
 
 All routes are under `/api/v0`, for example `POST /api/v0/instructor/exams`. Legacy unversioned endpoints are documented in the full API guide.
 
