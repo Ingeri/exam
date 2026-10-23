@@ -1,69 +1,18 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const highlights = [
+  { number: "01", title: "Thoughtful assessment", body: "Create clear, structured exams with ten flexible question formats." },
+  { number: "02", title: "The right access", body: "Set exam windows, private keys, and student enrollment in a few steps." },
+  { number: "03", title: "Results you can trust", body: "Grade objective answers automatically and review written work with care." },
+];
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+  return <main className="landing"><header className="site-header"><Link href="/" className="brand"><span className="brand-mark">i</span><span>ingeri<span className="brand-muted"> exam</span></span></Link><nav className="landing-nav"><Link href="/login" className="nav-signin">Sign in</Link><Link href="/register" className="button button-dark">Create account <span>→</span></Link></nav></header>
+    <section className="hero"><div className="hero-copy"><div className="eyebrow"><span className="eyebrow-dot" /> A BETTER WAY TO ASSESS</div><h1>Make room for<br /><span>real learning.</span></h1><p>Examinations that feel considered, run smoothly, and give every student a fair chance to show what they know.</p><div className="hero-actions"><Link href="/register" className="button button-primary">Get started <span>→</span></Link><Link href="/login" className="button button-plain">I already have an account</Link></div><div className="hero-proof"><span className="proof-avatars"><i>A</i><i>M</i><i>+</i></span><span>Built for students, instructors, and schools</span></div></div>
+      <div className="hero-art" aria-label="Illustration of a digital exam workspace"><div className="art-orbit orbit-one" /><div className="art-orbit orbit-two" /><div className="exam-sheet"><div className="sheet-top"><span className="sheet-brand"><i /> ingeri</span><span className="sheet-label">ASSESSMENT</span></div><div className="sheet-title"><span>Biology</span><small>Mid-term examination</small></div><div className="sheet-progress"><span>YOUR PROGRESS</span><span>04 <i>/ 12</i></span></div><div className="progress-line"><i /></div><div className="question-label">QUESTION 04 <span>1 point</span></div><h3>Which part of the cell produces energy?</h3><div className="answer-option"><i>A</i> Nucleus</div><div className="answer-option answer-selected"><i>B</i> Mitochondrion<span>✓</span></div><div className="answer-option"><i>C</i> Ribosome</div><div className="sheet-bottom"><span>← Previous</span><span>Continue →</span></div></div><div className="float-note note-top"><span className="note-check">✓</span><span><b>All set</b><small>Exam saved securely</small></span></div><div className="float-note note-bottom"><span className="note-score">92</span><span><b>Great result</b><small>Automatically graded</small></span></div><div className="art-sparkle sparkle-one">✳</div><div className="art-sparkle sparkle-two">✦</div></div></section>
+    <section className="trust-line"><span>MADE FOR FOCUSED LEARNING</span><i /><span>SECURE BY DESIGN</span><i /><span>BUILT FOR YOUR SCHOOL</span></section>
+    <section className="feature-section"><div className="feature-heading"><div><div className="eyebrow">A LITTLE MORE CLARITY</div><h2>Everything in its<br />right place.</h2></div><p>From the first question to the final mark, Ingeri keeps the experience simple for everyone.</p></div><div className="feature-grid">{highlights.map((item) => <article className="feature-card" key={item.number}><span className="feature-number">{item.number}</span><div className="feature-mark">{item.number === "01" ? "◫" : item.number === "02" ? "⌑" : "↗"}</div><h3>{item.title}</h3><p>{item.body}</p></article>)}</div></section>
+    <section className="bottom-cta"><div><div className="eyebrow">START WITH A CLEARER VIEW</div><h2>Good assessments<br />start with a good space.</h2></div><Link href="/register" className="button button-primary">Create your account <span>→</span></Link></section>
+    <footer className="site-footer"><Link href="/" className="brand"><span className="brand-mark">i</span><span>ingeri<span className="brand-muted"> exam</span></span></Link><span>Thoughtfully made for the moments that matter.</span><span>© Ingeri Exam</span></footer>
+  </main>;
 }
